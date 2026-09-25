@@ -36,21 +36,25 @@ async function downloadSpec() {
 
 /** Updates package.json and pom.xml with new API version */
 function updateProjectVersions() {
-  const nextPackageJson = {
-    ...packageJson,
-    version: desiredVersion
-  };
-  fs.writeFileSync(packageJsonPath, `${JSON.stringify(nextPackageJson, null, 2)}\n`);
+  if (desiredVersion === packageJson.version) {
+    console.log(`No updateto package.json`);
+  } else {
+    const nextPackageJson = {
+      ...packageJson,
+      version: desiredVersion
+    };
+    fs.writeFileSync(packageJsonPath, `${JSON.stringify(nextPackageJson, null, 2)}\n`);
+  }
 
   const pomXml = fs.readFileSync(pomXmlPath, 'utf8');
   const match = /<version>.+<!--APIVERSION-->/
   const nextPomXml = pomXml.replace(match, `<version>${desiredVersion}<!--APIVERSION-->`);
 
   if (nextPomXml === pomXml) {
-    throw new Error('Could not update project version in pom.xml');
+    console.log(`No update to pom.xml`);
+  } else {
+    fs.writeFileSync(pomXmlPath, nextPomXml);
   }
-
-  fs.writeFileSync(pomXmlPath, nextPomXml);
 }
 
 async function main() {

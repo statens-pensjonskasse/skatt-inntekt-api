@@ -25,6 +25,7 @@ jobs:
       - name: update
         run: |
           npm run update-spec
+          git status
           git add -A
 
       - name: Commit changes

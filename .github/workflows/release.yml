@@ -8,6 +8,9 @@ on:
 permissions:
   contents: write
 
+env:  # TODO: just use npm for versioning
+  API_SPEC_FILE: skatt-inntekt-api.yaml
+
 jobs:
   versioning:
     runs-on: ubuntu-latest
@@ -21,7 +24,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Find last git version
+      - name: Find last release tag
         id: gitversion
         run: |
           git fetch --tags
