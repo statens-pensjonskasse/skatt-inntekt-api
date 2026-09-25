@@ -1,0 +1,29 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "schedule": ["every 1 months on the 26th day of the month"],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^package\\.json$/"],
+      "matchStrings": [
+        "\"// renovate\":\\s*\"datasource=(?<datasource>[^\\s]+) depName=(?<depName>[^\\s]+) versioning=(?<versioning>[^\\s]+)\",\\s*\"apiUrl\":\\s*\"https://api\\.swaggerhub\\.com/apis/[^\\s\"]+/(?<currentValue>[^\"]+)\""
+      ]
+    }
+  ],
+  "customDatasources": {
+    "swaggerhub-api": {
+      "defaultRegistryUrlTemplate": "https://api.swaggerhub.com/apis/{{packageName}}",
+      "transformTemplates": [
+        "{\n  \"releases\": $map(apis, function($api) {\n    {\n      \"version\": $api.properties[type='X-Version'].value[0],\n      \"sourceUrl\": $api.properties[type='Swagger'].url[0],\n      \"apiUrl\": $api.properties[type='Swagger'].url[0],\n      \"apiVersion\": $api.properties[type='X-Version'].value[0]\n    }\n  })\n}"
+      ]
+    }
+  },
+  "packageRules": [
+    {
+      "matchPackageNames": [ "*" ],
+      "groupName": "Alle avhengigheter",
+      "groupSlug": "all-deps"
+    }
+  ],
+  "separateMajorMinor": false
+}

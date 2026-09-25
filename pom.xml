@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
+    <groupId>no.spk.ios</groupId>
+    <artifactId>skatt-inntekt-api</artifactId>
+    <version>1.6.2<!--APIVERSION--></version>  <!-- DONT TOUCH: version is updated by updater.mjs to match version of specification -->
+    <packaging>pom</packaging>
+
+    <description>Skatts API for inntekt</description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+
+    <scm>
+        <url>https://github.com/statens-pensjonskasse/skatt-inntekt-api</url>
+    </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/statens-pensjonskasse/skatt-inntekt-api</url>
+        </repository>
+    </distributionManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <classesDirectory>./</classesDirectory>
+                    <classifier>openapi</classifier>
+                    <includes>
+                        <include>README.md</include>
+                        <include>*.yaml</include>
+                        <include>*.json</include>
+                    </includes>
+                    <excludes>
+                        <exclude>package.json</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <inherited>false</inherited>
+                <executions>
+                    <execution>
+                        <id>attach-openapi</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>openapi</classifier>
+                            <classesDirectory>${api.build.directory}</classesDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
