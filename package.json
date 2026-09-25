@@ -1,0 +1,31 @@
+{
+  "name": "@statens-pensjonskasse/skatt-inntekt-api",
+  "version": "0.0.0",
+  "_README_": "BEWARE: version is updated by updater.mjs to match version of specification,_OPEN_API_ properties should be updated by renovate",
+  "_OPEN_API_": {
+    "// renovate": "datasource=custom.swaggerhub-api depName=skatteetaten/inntekt-api versioning=semver",
+    "apiUrl": "https://api.swaggerhub.com/apis/skatteetaten/inntekt-api/1.6.2",
+    "apiVersion": "1.6.2",
+    "specJson": "skatt-inntekt-api.json"
+  },
+  "files": [
+    "*.json",
+    "*.yaml",
+    "README.md"
+  ],
+  "scripts": {
+    "lint": "redocly lint skatt-inntekt-api.yaml && redocly lint skatt-inntekt-api.json",
+    "bundle": "redocly bundle skatt-inntekt-api.json -o skatt-inntekt-api.yaml",
+    "update-spec": "node scripts/updater.mjs  && npm run bundle"
+  },
+  "devDependencies": {
+    "@redocly/cli": "^2.53.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/statens-pensjonskasse/skatt-inntekt-api"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  }
+}
