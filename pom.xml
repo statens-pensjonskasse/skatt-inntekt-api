@@ -5,7 +5,7 @@
     
     <groupId>no.spk.ios</groupId>
     <artifactId>skatt-inntekt-api</artifactId>
-    <version>0.0.0<!--APIVERSION--></version>  <!-- DONT TOUCH: version is updated by updater.mjs to match version of specification -->
+    <version>1.6.2<!--APIVERSION--></version>  <!-- DONT TOUCH: version is updated by updater.mjs to match version of specification -->
     <packaging>pom</packaging>
 
     <description>Skatts API for inntekt</description>

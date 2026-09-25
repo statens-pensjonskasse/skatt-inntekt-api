@@ -1,0 +1,668 @@
+openapi: 3.0.3
+info:
+  description: Tjenesten leverer informasjon om arbeidsgivers (opplysningspliktiges) innrapporterte inntektsopplysninger for en inntektsmottaker for en gitt periode.
+  version: 1.6.2
+  title: Inntekt API
+  termsOfService: https://www.skatteetaten.no/deling/bruksvilkar-for-delingstjenester
+  contact:
+    name: Brukerstøtte
+    url: https://www.skatteetaten.no/deling/kontakt/
+servers:
+  - url: https://inntekt.api.skatteetaten-test.no/v1
+    description: Ekstern test
+  - url: https://inntekt.api.skatteetaten.no/v1
+    description: Produksjon
+security:
+  - maskinporten:
+      - skatteetaten:inntekt
+externalDocs:
+  description: Dokumentasjon på Skatteetatens GitHub
+  url: https://skatteetaten.github.io/api-dokumentasjon/api/inntekt
+paths:
+  /{rettighetspakke}/{personidentifikator}/inntekter:
+    get:
+      summary: Hent innrapporterte inntekter for person
+      description: Hent innrapporterte innteker for person
+      operationId: hentInntektForPerson
+      tags:
+        - Inntekt
+      parameters:
+        - name: rettighetspakke
+          in: path
+          description: Datakonsumenter plasseres i en rettighetspakke (per datasett) basert paa en juridisk vurdering. Rettighetspakken styrer Skjermingsregler, Filtrering og Detaljering som benyttes nÃ¥r det gis innsyn i data i datasett.
+          required: true
+          schema:
+            type: string
+        - name: personidentifikator
+          in: path
+          description: personidentifikator
+          required: true
+          schema:
+            type: string
+          example: 12345678901
+        - name: fraOgMed
+          in: query
+          description: Fra og med hvilken periode innrapporterte inntekter skal leveres.
+          required: false
+          schema:
+            type: string
+          example: 2020-01
+        - name: tilOgMed
+          in: query
+          description: Til og med hvilken periode innrapporterte inntekter skal leveres. Valgfritt parameter. Dersom tilOgMed ikke er satt brukes inneværende måned som parameter.
+          required: false
+          schema:
+            type: string
+          example: 2021-01
+        - name: opplysningspliktig
+          in: query
+          description: Identifikator (Organisasjonsnummer, fødselsnummer eller d-nummer) for opplysningspliktig. Parameteren opplysningspliktig er kun påkrevd for rettighetspakken OTP, for å sjekke at pensjonsinnretning har en gyldig avtale med opplysningspliktig for en forespurt periode. Kun med gyldig avtale kan en pensjonsinnretning få tilgang til inntektsmottaker data.
+          required: false
+          schema:
+            type: string
+          example: 12345678901
+        - name: virksomhet
+          in: query
+          description: Identifikator (Organisasjonsnummer, fødselsnummer eller d-nummer) for virksomhet.
+          required: false
+          schema:
+            type: string
+          example: 123456789
+        - name: historikk
+          in: query
+          description: 'historikk – boolean (default false): false – bare sist rapporterte inntektsopplysninger (gjeldende opplysninger) for en periode vil bli returnert true - alle rapporterte inntektsopplysninger i en periode vil bli returnert'
+          required: false
+          schema:
+            type: boolean
+            default: false
+          example: 'true'
+        - name: Korrelasjonsid
+          in: header
+          description: Korrelasjonsid, unik identifikator for den tekniske forespørselen. Må være på UUID-format
+          required: false
+          schema:
+            type: string
+            format: uuid
+          example: 123e4567-e89b-12d3-a456-426655440000
+        - name: AltinnSamtykke
+          in: header
+          description: Representasjon av samtykket (Altinn 2) man har innhentet fra skattyteren man henter data for. Gjelder kun for rettighetspakker som krever samtykke. Skal ikke anvendes for samtykker i Altinn 3.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Gyldig respons
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OppgaverInntektsmottaker'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/OppgaverInntektsmottaker'
+        default:
+          description: Diverse feilmeldinger, se egen dokumentasjon
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feil'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Feil'
+components:
+  securitySchemes:
+    maskinporten:
+      type: http
+      description: Maskinporten benyttes for autentisering
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Feil:
+      description: Feilstruktur for alle feilmeldinger.
+      type: object
+      properties:
+        kode:
+          type: string
+          description: Feilkode, for maskinell haandtering
+          example: IM-0xx
+        melding:
+          type: string
+          description: Beskrivelse av feilen som har oppstaatt
+          example: Fant ikke gitt personidentifikator
+        korrelasjonsid:
+          type: string
+          description: Korrelasjonsid
+          example: 123e4567-e89b-12d3-a456-426655440000
+      xml:
+        name: feil
+        namespace: urn:no:skatteetaten:datasamarbeid:feil:v1
+    OppgaverInntektsmottaker:
+      type: object
+      description: Samling av oppgaver for inntektsmottakere
+      properties:
+        oppgaveInntektsmottaker:
+          type: array
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb474b-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          items:
+            $ref: '#/components/schemas/OppgaveInntektsmottaker'
+      xml:
+        name: oppgaverInntektsmottaker
+        namespace: urn:no:skatteetaten:datasamarbeid:inntektsmottaker:inntekt:v1
+      required:
+        - oppgaveInntektsmottaker
+    AldersUfoereEtterlatteAvtalefestetOgKrigspensjon:
+      type: object
+      description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/7e881910-1b58-11e7-8e60-0050568351d2'>Begrepsreferanse</a>)
+      properties:
+        grunnpensjonsbeloep:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb473f-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Desimaltall'
+        tilleggspensjonsbeloep:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb47ca-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Desimaltall'
+        ufoeregrad:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb47d4-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Heltall'
+        pensjonsgrad:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4798-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Heltall'
+        heravEtterlattepensjon:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/fcee29b4-e1a0-48f2-87b1-2f1bca766454'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Desimaltall'
+        tidsrom:
+          description: ''
+          $ref: '#/components/schemas/Periode'
+    BilOgBaat:
+      type: object
+      description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/86c97610-1b6b-11e7-8e60-0050568351d2'>Begrepsreferanse</a>)
+      properties:
+        antallKilometer:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb46e9-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Desimaltall'
+        antallReiser:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb46eb-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Heltall'
+        heravAntallKilometerMellomHjemOgArbeid:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/901a7920-2986-11e7-8081-0050568351d2'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Desimaltall'
+        listeprisForBil:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4766-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Desimaltall'
+        bilregistreringsnummer:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4718-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Tekst'
+        erBilPool:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4728-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Boolsk'
+        erAnnenBil:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4727-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Boolsk'
+        erBilUtenforStandardregelen:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4729-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Boolsk'
+        personklassifiseringAvBilbruker:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/8eef5c24-b67f-4c0c-9ae1-9515af65543c'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Tekst'
+    BonusFraForsvaret:
+      type: object
+      description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/916e6030-1b6b-11e7-8e60-0050568351d2'>Begrepsreferanse</a>)
+      properties:
+        aaretUtbetalingenGjelderFor:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb47e0-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Aarstall'
+    DagmammaIEgenBolig:
+      type: object
+      description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb471c-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+      properties:
+        antallBarn:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb46e6-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Heltall'
+        antallMaaneder:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb46ea-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Heltall'
+    Forskuddstrekk:
+      type: object
+      description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4735-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+      properties:
+        beloep:
+          description: beløp forskudd
+          $ref: '#/components/schemas/Heltall'
+        beskrivelse:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb470f-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Tekst'
+        avvik:
+          type: array
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4706-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          items:
+            $ref: '#/components/schemas/Avvik'
+    Fradrag:
+      type: object
+      description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4737-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+      properties:
+        beskrivelse:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4710-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Tekst'
+        beloep:
+          description: beløp fradrag
+          $ref: '#/components/schemas/Desimaltall'
+        avvik:
+          type: array
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4706-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          items:
+            $ref: '#/components/schemas/Avvik'
+    Inntekt:
+      type: object
+      description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb474a-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+      properties:
+        skatteOgAvgiftsregel:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb47ae-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Tekst'
+        startdatoOpptjeningsperiode:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb47c1-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Dato'
+        sluttdatoOpptjeningsperiode:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb47b6-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Dato'
+        fordel:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/b574089b-d96a-11e6-8d9b-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Tekst'
+        utloeserArbeidsgiveravgift:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb47d9-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Boolsk'
+        inngaarIGrunnlagForTrekk:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4746-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Boolsk'
+        beloep:
+          description: beløp inntekt
+          $ref: '#/components/schemas/Desimaltall'
+        loennsinntekt:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/8ea2df44-7662-11e6-a74e-7e18b36b3fd9'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Loennsinntekt'
+        ytelseFraOffentlige:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb47df-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/YtelseFraOffentlige'
+        pensjonEllerTrygd:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/e59f0af0-2418-11e7-8e60-0050568351d2'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/PensjonEllerTrygd'
+        naeringsinntekt:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4779-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Naeringsinntekt'
+        avvik:
+          type: array
+          description: Brudd på en forretningsregel (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4706-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          items:
+            $ref: '#/components/schemas/Avvik'
+      oneOf:
+        - required:
+            - loennsinntekt
+        - required:
+            - ytelseFraOffentlige
+        - required:
+            - pensjonEllerTrygd
+        - required:
+            - naeringsinntekt
+    Inntektsmottaker:
+      type: object
+      description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb474b-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+      properties:
+        personidentifikator:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/88804c46-ff43-11e6-9d97-005056825ca0'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Tekst'
+        avvik:
+          type: array
+          description: Brudd på en forretningsregel
+          items:
+            $ref: '#/components/schemas/Avvik'
+    Livrente:
+      type: object
+      description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4767-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+      properties:
+        totaltUtbetaltBeloep:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4768-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Desimaltall'
+    LottOgPartInnenFiske:
+      type: object
+      description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4769-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+      properties:
+        antallDager:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb476a-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Heltall'
+    Loennsinntekt:
+      type: object
+      description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb476f-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+      properties:
+        beskrivelse:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4711-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Loennsbeskrivelse'
+        tilleggsinformasjon:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/0a8af270-2419-11e7-8e60-0050568351d2'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Tilleggsinformasjon'
+        spesifikasjon:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/feef9a60-2418-11e7-8e60-0050568351d2'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Spesifikasjon'
+        antall:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/4c2d71b0-1b5b-11e7-8e60-0050568351d2'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Desimaltall'
+    Nettoloennsordning:
+      type: object
+      description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4777-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+      properties:
+        oppgrossingstabellnummer:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb477d-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Heltall'
+        bilinformasjon:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/9dc9c5ce-189e-45c7-80a6-6eb37289bac5'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/BilOgBaat'
+        betaltSkattebeloepIUtlandet:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4717-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Desimaltall'
+    NorskKontinentalsokkel:
+      type: object
+      description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb475c-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+      properties:
+        tidsrom:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/2fd4b4ce-c384-4f9a-b176-b868e102b9a3'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Periode'
+        gjelderLoennFoerste60Dager:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb473c-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Boolsk'
+    Naeringsinntekt:
+      type: object
+      description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4779-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+      properties:
+        beskrivelse:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4712-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Naeringsinntektbeskrivelse'
+        tilleggsinformasjon:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/0a8af270-2419-11e7-8e60-0050568351d2'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Tilleggsinformasjon'
+    OppgaveInntektsmottaker:
+      type: object
+      description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb474b-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+      properties:
+        opplysningspliktigId:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4783-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Tekst'
+        virksomhetId:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/c72a9c60-82ed-11ea-a7e9-0050568351d2'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Tekst'
+        kalendermaaned:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4756-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Tekst'
+        inntektsmottaker:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb474b-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Inntektsmottaker'
+        skjermet:
+          description: ''
+          $ref: '#/components/schemas/Boolsk'
+        inntekt:
+          type: array
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb474a-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          items:
+            $ref: '#/components/schemas/Inntekt'
+        fradrag:
+          type: array
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4737-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          items:
+            $ref: '#/components/schemas/Fradrag'
+        forskuddstrekk:
+          type: array
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4735-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          items:
+            $ref: '#/components/schemas/Forskuddstrekk'
+        oppsummeringstidspunkt:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/f9a11c5e-1382-46fa-9e5b-5e1ea00da9f8'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/DatoTid'
+        mottaksinformasjon:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/c854ea49-4802-42c8-935b-c4e663078245'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/SkatteetatensMottaksinformasjon'
+        oppholdPaaSvalbardJanMayenOgBilandene:
+          type: array
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/75c4a360-240f-11e7-8e60-0050568351d2'>Begrepsreferanse</a>)
+          items:
+            $ref: '#/components/schemas/OppholdPaaSvalbardJanMayenOgBilandene'
+        sjoefolksrelatertInformasjon:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/f90e52d0-2418-11e7-8e60-0050568351d2'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/SjoefolksrelatertInformasjon'
+    OppholdPaaSvalbardJanMayenOgBilandene:
+      type: object
+      description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/75c4a360-240f-11e7-8e60-0050568351d2'>Begrepsreferanse</a>)
+      properties:
+        oppholdsId:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4781-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Identifikator'
+        startdato:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb47c0-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Dato'
+        sluttdato:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb47b5-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Dato'
+        beskrivelse:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb470e-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/OppholdsbeskrivelseForSvalbardJanMayenOgBilandene'
+    PensjonEllerTrygd:
+      type: object
+      description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/e59f0af0-2418-11e7-8e60-0050568351d2'>Begrepsreferanse</a>)
+      properties:
+        beskrivelse:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4713-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/PensjonEllerTrygdBeskrivelse'
+        tilleggsinformasjon:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/0a8af270-2419-11e7-8e60-0050568351d2'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Tilleggsinformasjon'
+    ReiseKostOgLosji:
+      type: object
+      description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/f229a500-2418-11e7-8e60-0050568351d2'>Begrepsreferanse</a>)
+      properties:
+        persontype:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb479f-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Tekst'
+        antallReiser:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/3f1e0910-2594-11e7-8e60-0050568351d2'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Heltall'
+    SjoefolksrelatertInformasjon:
+      type: object
+      description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/f90e52d0-2418-11e7-8e60-0050568351d2'>Begrepsreferanse</a>)
+      properties:
+        antallDoegnOmbord:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/8ea2df1d-7662-11e6-a74e-7e18b36b3fd9'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Heltall'
+        antallDoegnOmbordUtenDekkedeSmaautgifter:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/f81f405c-e2fe-4462-993d-bdc6b21663ac'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Heltall'
+    Spesifikasjon:
+      type: object
+      description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/feef9a60-2418-11e7-8e60-0050568351d2'>Begrepsreferanse</a>)
+      properties:
+        skattemessigBosattILand:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb47af-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Tekst'
+        opptjeningsland:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4786-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Tekst'
+        erOpptjentPaaHjelpefartoey:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4788-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Boolsk'
+        erOpptjentPaaKontinentalsokkel:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4789-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Boolsk'
+    Tilleggsinformasjon:
+      type: object
+      description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/0a8af270-2419-11e7-8e60-0050568351d2'>Begrepsreferanse</a>)
+      properties:
+        bilOgBaat:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/86c97610-1b6b-11e7-8e60-0050568351d2'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/BilOgBaat'
+        dagmammaIEgenBolig:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb471c-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/DagmammaIEgenBolig'
+        etterbetalingsperiode:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/d3abe89d-912f-4223-88c0-77ab93b75dc1'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Periode'
+        inntektPaaNorskKontinentalsokkel:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/ef2199d3-0b7e-4d77-abac-6be07a684477'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/NorskKontinentalsokkel'
+        inntjeningsforhold:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb47bc-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Tekst'
+        livrente:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4767-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Livrente'
+        lottOgPart:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4769-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/LottOgPartInnenFiske'
+        nettoloenn:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4777-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Nettoloennsordning'
+        pensjon:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/8ea2df4d-7662-11e6-a74e-7e18b36b3fd9'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/AldersUfoereEtterlatteAvtalefestetOgKrigspensjon'
+        reiseKostOgLosji:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/f229a500-2418-11e7-8e60-0050568351d2'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/ReiseKostOgLosji'
+        utenlandskArtist:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb47d7-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/UtenlandskArtist'
+        bonusFraForsvaret:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/916e6030-1b6b-11e7-8e60-0050568351d2'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/BonusFraForsvaret'
+      oneOf:
+        - required:
+            - bilOgBaat
+        - required:
+            - dagmammaIEgenBolig
+        - required:
+            - etterbetalingsperiode
+        - required:
+            - inntektPaaNorskKontinentalsokkel
+        - required:
+            - inntjeningsforhold
+        - required:
+            - livrente
+        - required:
+            - lottOgPart
+        - required:
+            - nettoloenn
+        - required:
+            - pensjon
+        - required:
+            - reiseKostOgLosji
+        - required:
+            - utenlandskArtist
+        - required:
+            - bonusFraForsvaret
+    UtenlandskArtist:
+      type: object
+      description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb47d7-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+      properties:
+        inntektsaar:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb474f-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Aarstall'
+        oppgrossingsgrunnlag:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb477c-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Desimaltall'
+        trukketArtistskatt:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb47cd-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Heltall'
+    YtelseFraOffentlige:
+      type: object
+      description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb47df-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+      properties:
+        beskrivelse:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/cf248037-dfe5-11e7-9101-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/YtelseFraOffentligeBeskrivelse'
+        tilleggsinformasjon:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/0a8af270-2419-11e7-8e60-0050568351d2'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Tilleggsinformasjon'
+    Avvik:
+      type: object
+      description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4706-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+      properties:
+        id:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4708-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Tekst'
+        navn:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb4709-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Tekst'
+        alvorlighetsgrad:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb46e2-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Alvorlighetsgrad'
+    SkatteetatensMottaksinformasjon:
+      type: object
+      description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/c854ea49-4802-42c8-935b-c4e663078245'>Begrepsreferanse</a>)
+      properties:
+        foersteMottakstidspunkt:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/2d13a489-4b2a-4bb8-9815-48f5366a5c92'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/DatoKlokkeslett'
+        sisteMottakstidspunkt:
+          description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/e171ccfd-eef1-40ec-8f50-5ad73bbe2ca4'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/DatoKlokkeslett'
+    Alvorlighetsgrad:
+      type: string
+      description: kategorisering av alvorligheten i feilen/uregelmessigheten som er oppdaget under innsending av a-meldingen. Den gis i A03 a-melding tilbakemelding. (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb46e2-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+      enum:
+        - avvisning
+        - oeyeblikkelig
+        - retningslinje
+    Loennsbeskrivelse:
+      type: string
+      description: (<a href='https://data.skatteetaten.no/web/datakatalog/kodeliste/614aa2ed-d2d2-48ee-9341-9834f9b73567'>Kodelistereferanse</a>)
+    Naeringsinntektbeskrivelse:
+      type: string
+      description: (<a href='https://data.skatteetaten.no/web/datakatalog/kodeliste/7518d962-6201-4854-91dd-3f183e0c7736'>Kodelistereferanse</a>)
+    OppholdsbeskrivelseForSvalbardJanMayenOgBilandene:
+      type: string
+      description: (<a href='1f12099c-61a2-4734-80f9-bbeebc792dc1'>Kodelistereferanse</a>) (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/dcfb470e-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+    PensjonEllerTrygdBeskrivelse:
+      type: string
+      description: (<a href='https://data.skatteetaten.no/web/datakatalog/kodeliste/321a6cf4-e1af-4127-aca2-5218d5a277ed'>Kodelistereferanse</a>)
+    YtelseFraOffentligeBeskrivelse:
+      type: string
+      description: beskrivelse på hvilken kategori av ytelsesinntekt som en utbetaling tilhører (<a href='https://data.skatteetaten.no/web/datakatalog/kodeliste/a0cc3d12-c868-4c8c-8779-1e6a3759f4a1'>Kodelistereferanse</a>)
+    Desimaltall:
+      type: number
+      description: tall som er satt sammen av en heltallsdel og en fraksjondel [wikipedia] (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/20b52aef-9fe1-11e5-a9f8-e4115b280940'>Begrepsreferanse</a>)
+      format: double
+    Heltall:
+      type: integer
+      description: hele tall, dvs. hele tall i mengden {..., -2, -1, 0, 1, 2, ...} (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/20b52af0-9fe1-11e5-a9f8-e4115b280940'>Begrepsreferanse</a>)
+      format: int64
+    Periode:
+      type: object
+      description: (<a href='https://data.skatteetaten.no/begrep/20b52b6d-9fe1-11e5-a9f8-e4115b280940'>Begrepsreferanse</a>)
+      properties:
+        startdato:
+          description: (<a href='https://data.skatteetaten.no/begrep/dcfb47c2-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Dato'
+        sluttdato:
+          description: (<a href='https://data.skatteetaten.no/begrep/dcfb47b7-e484-11e6-9cb3-005056821322'>Begrepsreferanse</a>)
+          $ref: '#/components/schemas/Dato'
+      required:
+        - startdato
+        - sluttdato
+    Tekst:
+      type: string
+      description: vilkårlig lang sekvens av tegn inkludert aksenter og spesielle tegn fra standardiserte tegnsett (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/20b52af3-9fe1-11e5-a9f8-e4115b280940'>Begrepsreferanse</a>)
+      maxLength: 4000
+    Boolsk:
+      type: boolean
+      description: angir verdien sann eller usann (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/20b52aec-9fe1-11e5-a9f8-e4115b280940'>Begrepsreferanse</a>)
+    Aarstall:
+      type: string
+      description: årstall er et tall som angir årets nummer i tidsregningen i den gregorianske kalender (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/20b2e14a-9fe1-11e5-a9f8-e4115b280940'>Begrepsreferanse</a>)
+      format: year
+    Dato:
+      type: string
+      description: 'gir verdier for år, måned og dag. Kodes som en tekststreng etter datoformatering spesifisert i  ISO 8601 (ISO 8601:2004 Data elements and interchange formats -- Information interchange -- Representation of dates and times). Eksempel : 1998-12-21 eller 19981221. (<a href=''https://data.skatteetaten.no/web/datakatalog/begrep/20b52aed-9fe1-11e5-a9f8-e4115b280940''>Begrepsreferanse</a>)'
+      format: date
+    DatoTid:
+      type: string
+      description: ''
+      format: date-time
+    Identifikator:
+      type: string
+      description: (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/20b2e2f8-9fe1-11e5-a9f8-e4115b280940'>Begrepsreferanse</a>)
+    DatoKlokkeslett:
+      type: string
+      description: en kombinasjon av typene Dato og Klokkeslett. Kodes som en tekststreng etter datoformatering spesifisert i ISO 8601 (ISO 8601:2004 Data elements and interchange formats -- Information interchange -- Representation of dates and times). (<a href='https://data.skatteetaten.no/web/datakatalog/begrep/20b52aee-9fe1-11e5-a9f8-e4115b280940'>Begrepsreferanse</a>)
+      format: date-time

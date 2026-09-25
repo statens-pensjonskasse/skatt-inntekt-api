@@ -1,6 +1,6 @@
 {
   "name": "@statens-pensjonskasse/skatt-inntekt-api",
-  "version": "0.0.0",
+  "version": "1.6.2",
   "_README_": "BEWARE: version is updated by updater.mjs to match version of specification,_OPEN_API_ properties should be updated by renovate",
   "_OPEN_API_": {
     "// renovate": "datasource=custom.swaggerhub-api depName=skatteetaten/inntekt-api versioning=semver",
