@@ -1,0 +1,14 @@
+{
+  "********************************* ABOUT **********************************": [
+    "registry + package spesifiserer hvor API versjoner finnes",
+    "apiVersion og apiUrl er siste versjon henta fra registry, oppdateres av api-renovate script",
+    "specJson er filen med nedlastet spesifikasjon, oppdateres av api-update script"
+  ],
+  "registry": "https://api.swaggerhub.com/apis/{package}",
+  "package": "skatteetaten/inntekt-api",
+
+  "apiVersion": "1.6.2",
+  "apiUrl": "https://api.swaggerhub.com/apis/skatteetaten/inntekt-api/1.6.2",
+
+  "specJson": "skatt-inntekt-api.json"
+}
