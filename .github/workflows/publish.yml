@@ -62,8 +62,8 @@ jobs:
           git config user.email github-actions@github.com
 
           # tagging is done by release step below
-          git tag ${{ needs.versioning.outputs.version }}
-          git push origin ${{ needs.versioning.outputs.version }}
+          git tag ${{ steps.apiversion.outputs.apiversion }}
+          git push origin ${{ steps.apiversion.outputs.apiversion }}
 
       - name: Generate app token for release
         id: app-token
@@ -76,7 +76,7 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ needs.versioning.outputs.version }}
+          tag_name: ${{ steps.apiversion.outputs.apiversion }}
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
