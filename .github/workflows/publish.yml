@@ -7,6 +7,8 @@ on:
 
 permissions:
   contents: write
+  packages: write
+
 
 env:  # TODO: just use npm for versioning
   API_SPEC_FILE: skatt-inntekt-api.yaml
@@ -17,7 +19,6 @@ jobs:
     outputs:
       version: ${{ steps.apiversion.outputs.apiversion }}
       release: ${{ steps.goahead.outputs.release }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
