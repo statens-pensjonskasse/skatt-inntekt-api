@@ -5,7 +5,7 @@
     
     <groupId>no.spk.ios</groupId>
     <artifactId>skatt-inntekt-api</artifactId>
-    <version>1.6.2<!--APIVERSION--></version>  <!-- DONT TOUCH: version is updated by updater.mjs to match version of specification -->
+    <version>1.6.2<!--APIVERSION--></version>  <!-- BEWARE: version is updated by api-updater.mjs to match version of API -->
     <packaging>pom</packaging>
 
     <description>Skatts API for inntekt</description>
@@ -13,6 +13,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <maven-jar-plugin.version>3.5.1</maven-jar-plugin.version>
     </properties>
 
     <scm>
@@ -27,6 +28,14 @@
     </distributionManagement>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>${maven-jar-plugin.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -34,9 +43,9 @@
                     <classesDirectory>./</classesDirectory>
                     <classifier>openapi</classifier>
                     <includes>
+                        <include>skatt-inntekt-api.yaml</include>
+                        <include>skatt-inntekt-api.json</include>
                         <include>README.md</include>
-                        <include>*.yaml</include>
-                        <include>*.json</include>
                     </includes>
                     <excludes>
                         <exclude>package.json</exclude>
@@ -45,7 +54,6 @@
             </plugin>
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
-                <inherited>false</inherited>
                 <executions>
                     <execution>
                         <id>attach-openapi</id>

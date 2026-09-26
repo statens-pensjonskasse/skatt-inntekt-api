@@ -1,43 +1,52 @@
+/*******************************************************************************
+// script som oppdaterer Open API spesifikasjonen, pom.xml og package.json
+// ihht oppsett i api.json 
+********************************************************************************/
+
 import fs from 'node:fs';
 import path from 'node:path';
-import packageJson from '../package.json' with { type: 'json' };
+import api from '../api.json' with { type: 'json' };
 
+const desiredVersion = api.apiVersion;
+const downloadedSpec = path.resolve(api.specJson);
 
-const packageJsonPath = path.resolve('package.json');
-const pomXmlPath = path.resolve('pom.xml');
-const desiredVersion = packageJson._OPEN_API_.apiVersion;
-const specUrl = packageJson._OPEN_API_.apiUrl;
-const specJson = path.resolve(packageJson._OPEN_API_.specJson);
+function readJson(file) {
+  return JSON.parse(fs.readFileSync(file, 'utf8'));
+}
 
-let actualVersion = '0.0.0';
-try {
-  // gets version from Open API specification
-  const apiDocument = (await import(specJson, { with: { type: 'json' } })).default;
-  actualVersion = apiDocument.info.version;
-} catch (error) {
-  if (error.code !== 'ERR_MODULE_NOT_FOUND') {
-    throw error;
+/** Version of API found in downloaded specification */
+function downloadedVersion() {
+  try {
+    return readJson(downloadedSpec).info?.version;
+  } catch (error) {
+    if (error.code !== 'ENOENT') {
+      throw error;
+    }
+    return undefined;
   }
 }
 
+/** Download specification */
 async function downloadSpec() {
-  if (!specUrl) {
-    throw new Error('Missing _OPEN_API_.apiUrl in package.json');
+  if (!api.apiUrl) {
+    throw new Error('Missing apiUrl in api.json');
   }
-  const response = await fetch(specUrl);
+  const response = await fetch(api.apiUrl);
   if (!response.ok) {
     throw new Error(`Download failed: ${response.status} ${response.statusText}`);
   }
 
   const body = await response.json();
   const prettied = JSON.stringify(body, null, 2);
-  fs.writeFileSync(path.resolve(specJson), prettied);
+  fs.writeFileSync(downloadedSpec, prettied);
 }
 
 /** Updates package.json and pom.xml with new API version */
 function updateProjectVersions() {
+  const packageJsonPath = path.resolve('package.json');
+  const packageJson = readJson(packageJsonPath);
   if (desiredVersion === packageJson.version) {
-    console.log(`No updateto package.json`);
+    console.log(`No update to package.json`);
   } else {
     const nextPackageJson = {
       ...packageJson,
@@ -46,6 +55,7 @@ function updateProjectVersions() {
     fs.writeFileSync(packageJsonPath, `${JSON.stringify(nextPackageJson, null, 2)}\n`);
   }
 
+  const pomXmlPath = path.resolve('pom.xml');
   const pomXml = fs.readFileSync(pomXmlPath, 'utf8');
   const match = /<version>.+<!--APIVERSION-->/
   const nextPomXml = pomXml.replace(match, `<version>${desiredVersion}<!--APIVERSION-->`);
@@ -58,6 +68,7 @@ function updateProjectVersions() {
 }
 
 async function main() {
+  const actualVersion = downloadedVersion();
   if ( actualVersion === desiredVersion ) {
     console.log(`No update needed. Current version: ${actualVersion}, Desired version: ${desiredVersion}`);
   } else {
