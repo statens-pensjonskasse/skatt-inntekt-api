@@ -3,14 +3,15 @@ name: Build and Publish to GitHub Packages
 on:
   push:
     branches:
-      - tull  # TODO: denne funker ikke før workflow får tilgang til secrets: PUBLIC_ACTIONS_LIBRARY_APP_ID and PUBLIC_ACTIONS_LIBRARY_SSH_KEY
+      - DOES_NOT_WORK  # TODO: trenger tilgang til secrets: PUBLIC_ACTIONS_LIBRARY_APP_ID and PUBLIC_ACTIONS_LIBRARY_SSH_KEY
+
+permissions:
+  contents: write
+  packages: write
 
 jobs:
   release-and-publish-mvn:
     uses: statens-pensjonskasse/public-actions-library/.github/workflows/build-library-maven.yaml@b1509281d74a1afb44d9ceabfb361f8cf4bec420 # v0.3.6
-    permissions:
-      contents: write
-      packages: write
     secrets: inherit
     with:
       java-version: '25'
@@ -19,17 +20,11 @@ jobs:
     runs-on: ubuntu-latest
     if: needs.release-and-publish-mvn.outputs.published == 'true'
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 24
-          registry-url: https://npm.pkg.github.com
-      - name: Publish npm package
-        id: publish
+      - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ github.token }}
-        run: |
-          npm publish
-          echo "published=true" >> "$GITHUB_OUTPUT"
+
