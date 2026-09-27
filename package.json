@@ -1,17 +1,23 @@
 {
+  "description": "Wrapper swaggerhub OpenAPI specification for Skatteetatens Inntekt API",
   "name": "@statens-pensjonskasse/skatt-inntekt-api",
   "version": "1.6.2",
-  "_README_": "BEWARE: version is updated by api-updater.mjs to match version of API",
+  "_README_": [
+    "********************************************************************",
+    "BEWARE: version is updated by scripts to match version of API",
+    "All dependencies are for development, possibly building and testing, but not for published artifacts",
+    "published artifacts have no dependencies",
+    "********************************************************************"
+  ],
   "files": [
     "skatt-inntekt-api.json",
-    "skatt-inntekt-api.yaml",
-    "README.md"
+    "skatt-inntekt-api.yaml"
   ],
   "scripts": {
     "lint": "redocly lint skatt-inntekt-api.yaml && redocly lint skatt-inntekt-api.json",
-    "make-yaml": "redocly bundle skatt-inntekt-api.json -o skatt-inntekt-api.yaml",
     "renovate": "node scripts/api-renovate.mjs",
-    "update-spec": "node scripts/api-updater.mjs  && npm run make-yaml"
+    "update-spec": "node scripts/api-updater.mjs",
+    "postpublish": "node scripts/maven.mjs"
   },
   "devDependencies": {
     "@redocly/cli": "^2.53.3"

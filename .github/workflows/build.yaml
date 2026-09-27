@@ -1,4 +1,4 @@
-name: Update Open API specification
+name: Update Open API specFile
 # run npm update-spec, commit and push changes, in case developer / renovate forgets
 
 on:
