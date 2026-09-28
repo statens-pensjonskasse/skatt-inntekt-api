@@ -7,7 +7,7 @@ on:
 
 jobs:
   update-spec:
-    uses: api-prepare.yml
+    uses: statens-pensjonskasse/skatt-inntekt-api/.github/workflows/api-prepare.yml@5bebe21e5e77aa7e6f56be5ea683552591554a9e
     with:
       align-command: 'npm ci && npm run update-spec'
       commit-message: 'chore: update of API carried to other project files'
