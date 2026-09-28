@@ -9,7 +9,7 @@
     "version is managed by update-spec script to align with API version",
     "package.json serves as a template",
     "scripts are for development use, no dependencies are allowed",
-    "files are downloaded and NEVER EDITED",
+    "files are downloaded and NEVER EDITED, filenames are bound to artifactId / name",
     "LICENSE must not be attached, as the downloaded files are not ours to license",
     "********************************************************************"
   ],
