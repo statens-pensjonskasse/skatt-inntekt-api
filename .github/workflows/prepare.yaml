@@ -1,0 +1,16 @@
+name: Update project files after changes to API (version) / before publising
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  update-spec:
+    uses: api-prepare.yml
+    with:
+      align-command: 'npm ci && npm run update-spec'
+      commit-message: 'chore: update of API carried to other project files'
+    permissions:
+      contents: write
+    secrets: inherit

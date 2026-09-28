@@ -1,10 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "timezone": "Europe/Oslo",
-  "schedule": [
-    "* 17-21 * * 1",
-    "every 1 months on the 15th day of the month"
-  ],
+  "schedule": [ "at 5:00am on Tuesday" ],
   "customManagers": [
     {
       "customType": "jsonata",
