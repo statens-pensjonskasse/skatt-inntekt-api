@@ -1,22 +1,41 @@
 /*****************************************************
- // common functions to process project file: api.json
+ // common functions to process API properties in api-registry.json OR package.json
  *****************************************************/
 
 import {writeFileSync} from 'node:fs';
 import path from 'node:path';
 import {readJson, writeJson} from "./utils.mjs";
-import api from '../api.json' with { type: 'json' };
+import packageJson from '../package.json' with { type: 'json' };
+import apiRegistry from '../api-registry.json' with { type: 'json' };
+import {updatePackageVersion} from "./package.mjs";
+import {updatePomVersion} from "./maven.mjs";
+import {apiVersions} from "./swaggerhub.mjs";
 
-const apiJsonPath = path.resolve('api.json');
+/* may specify registry and version in package.json, depending on which renovate setup works
+// swaggerhubDependency: { "<registry url>": "<version>" }
+const [[registry, desiredVersion]] = Object.entries(packageJson.swaggerhubDependency);
+const apiProperties = {
+    registry,
+    desiredVersion,
+    specJson: packageJson.files[0],
+    specYaml: packageJson.files[1]
+};
+ */
+const apiProperties = {
+    registry: apiRegistry.registry,
+    desiredVersion: apiRegistry.desiredVersion,
+    localJsonFile: apiRegistry.localJson,
+    localYamlFile: apiRegistry.localYaml
+};
 
-export const apiJson = api;
+/** Path to files read/written are relative to where script is run from, not script location as for imports */
+const specFile = path.resolve(apiProperties.localJsonFile);
+const specYaml = path.resolve(apiProperties.localYamlFile);
 
-/** Path to file containing the downloaded API specification, may not exist */
-export const specFile = path.resolve(api.specJson);
-export const specYaml = path.resolve(api.specJson.replace(/\.json$/, '.yaml'));
+
 
 /** Downloaded specification, null if not downloaded yet */
-export function readSpec() {
+function readSpec() {
     try {
         return readJson(specFile);
     } catch (error) {
@@ -43,56 +62,55 @@ async function fetchYaml(url) {
     return await response.text();
 }
 
-/** Download specifications, yaml and json format */
-export async function downloadSpec() {
-    const yamlUrl = apiJson.apiUrl + "/swagger.yaml";
+/** Download specification for desired version, yaml and json format */
+async function updateSpec() {
+    const versions = await apiVersions(apiProperties.registry);
+    const apiUrl = versions.url(apiProperties.desiredVersion);
+
+    const yamlUrl = apiUrl + "/swagger.yaml";
     writeFileSync(specYaml, await fetchYaml(yamlUrl));
     console.log(`${yamlUrl} downloaded to ${specYaml}`);
 
     // json file is parsed for currently downloaded version, so we download it after yaml to avoid inconsistent versions
-    writeJson(specFile, await fetchJson(apiJson.apiUrl));
-    console.log(`${apiJson.apiUrl} downloaded to ${specFile}`);
+    writeJson(specFile, await fetchJson(apiUrl));
+    console.log(`${apiUrl} downloaded to ${specFile}`);
+
+    updatePackageVersion(apiProperties.desiredVersion);
+    updatePomVersion(apiProperties.desiredVersion);
 }
 
-/** Latest versipon of API found on Swaggerhub */
-async function latestVersion() {
-    const response = await fetch(apiJson.registry);
-    if (!response.ok) {
-        throw new Error(`SwaggerHub request failed: GET ${apiJson.registry} responded ${response.status} ${response.statusText}`);
-    }
-
-    const swaggerHubInfo = await response.json();
-    const version = swaggerHubInfo.defaultVersion;
-    if (typeof version !== 'string' || !version) {
-        throw new Error('SwaggerHub response did not include a default version');
-    }
-
-    const latestApi = swaggerHubInfo.apis?.find((swaggerApi) =>
-        swaggerApi.properties?.some((property) =>
-            property.type === 'X-Version' && property.value === version
-        )
-    );
-    const apiVersion = latestApi?.properties?.find((property) => property.type === 'X-Version')?.value;
-    const apiUrl = latestApi?.properties?.find((property) => property.type === 'Swagger')?.url;
-    if (apiVersion !== version || typeof apiUrl !== 'string' || !apiUrl) {
-        throw new Error(`SwaggerHub response did not include X-Version and Swagger URL for ${version}`);
-    }
-
-    return {
-        ...apiJson,
-        apiVersion,
-        apiUrl,
-    };
-}
-
-export async function renovateApi() {
-    const latest = await latestVersion();
-    if (apiJson.apiVersion === latest.apiVersion && apiJson.apiUrl === latest.apiUrl) {
-        console.log(`No update needed. Current version: ${apiJson.apiVersion}`);
+/** Updates package.json swaggerhubDependency version */
+async function renovateApi() {
+    const versions = await apiVersions(apiProperties.registry);
+    if (apiProperties.desiredVersion === versions.latest) {
+        console.log(`No update needed. Current version ${apiProperties.desiredVersion} is latest found on ${apiProperties.registry}`);
     } else {
-        writeJson(apiJsonPath, latest);
-        console.log(`Updated api.json to version ${latest.apiVersion}: ${latest.apiUrl}`);
+        // til vi har landa på løsning for versjonering, oppdateres begge mulighetene
+        const nextApiRegistry = {
+            ...apiRegistry,
+            desiredVersion: versions.latest
+        };
+        writeJson(path.resolve('api-registry.json'), nextApiRegistry);
+        console.log(`Updated desiredVersion in api-registry.json: ${versions.latest}`);
+
+        const nextPackageJson = {
+            ...packageJson,
+            swaggerhubDependency: {
+                [apiProperties.registry]: versions.latest
+            }
+        };
+        writeJson(path.resolve('package.json'), nextPackageJson);
+        console.log(`Updated swaggerhubDependency in package.json: ${versions.latest}`);
     }
 
-}   
+}
 
+
+export const API = {
+    specJson: apiProperties.localJsonFile,
+    specYaml: apiProperties.localYamlFile,
+    desiredVersion: apiProperties.desiredVersion,
+    downloadedVersion: readSpec()?.info?.version,
+    updateSpec,
+    renovateApi
+};

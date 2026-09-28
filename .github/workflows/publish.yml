@@ -25,6 +25,8 @@ jobs:
         with:
           fetch-depth: 0
 
+      # TODO: how about a node script that gets spec version, or even better: find out if we should and _can_ release by comparing all versions
+
       - name: Find last release tag
         id: gitversion
         run: |

@@ -3,11 +3,17 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- BEWARE: NOT A MAVEN PROJECT, pom should not be edited, it is used and manipulated by scripts/mvn-publish.mjs -->
+    <!-- BEWARE: NOT A MAVEN PROJECT, pom is used and manipulated by scripts -->
     <groupId>no.spk.ios</groupId>
     <artifactId>skatt-inntekt-api</artifactId>
     <version>1.6.2<!--APIVERSION--></version>
     <packaging>pom</packaging>
+
+    <licenses>
+        <license>
+            <comments>The Open API specification contained in artifacts is downloaded unmodified from Skatteetaten. Statens pensjonskasse grants no licence to it; the MIT License of the source repository does not apply.</comments>
+        </license>
+    </licenses>
 
     <scm>
         <url>https://github.com/statens-pensjonskasse/${project.artifactId}</url>

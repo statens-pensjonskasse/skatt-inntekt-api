@@ -1,12 +1,13 @@
 /***********************************************************************
- // common functions to process package.json
+ // common functions to process package.json (the published package in repository root)
  ***********************************************************************/
 
 import path from 'node:path';
-import {writeJson} from "./utils.mjs";
-import nodePackage from '../package.json' with { type: 'json' };
+import {readJson, writeJson} from "./utils.mjs";
 
-export const packageJson = nodePackage;
+const packageJsonPath = path.resolve('package.json');
+
+export const packageJson = readJson(packageJsonPath);
 
 /** Updates package.json version */
 export function updatePackageVersion(desiredVersion) {
@@ -17,6 +18,6 @@ export function updatePackageVersion(desiredVersion) {
             ...packageJson,
             version: desiredVersion
         };
-        writeJson(path.resolve('package.json'), nextPackageJson);
+        writeJson(packageJsonPath, nextPackageJson);
     }
 }

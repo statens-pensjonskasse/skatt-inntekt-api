@@ -1,5 +1,5 @@
 /*******************************************************************************
- // common functions to look into the actual, downloaded json file
+ // common functions and paths used by the scripts
  ********************************************************************************/
 
 import {readFileSync, writeFileSync} from 'node:fs';
@@ -10,6 +10,5 @@ export function readJson(file) {
 
 export function writeJson(filePath, data) {
     const prettied = JSON.stringify(data, null, 2);
-    writeFileSync(filePath, prettied);
+    writeFileSync(filePath, `${prettied}\n`);
 }
-

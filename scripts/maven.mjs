@@ -3,14 +3,15 @@
 **************************************************************************************************************************/
 
 import fs from 'node:fs';
-import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import {readSpec, specFile, specYaml} from './api.mjs';
+import {API} from './api.mjs';
+
+const pomXmlPath = 'pom.xml';
 
 /** Value of a pom expression as resolved by maven, e.g. project.distributionManagement.repository.url */
 function pomValue(expression) {
   const value = execFileSync('mvn', [
-    'help:evaluate', `-Dexpression=${expression}`, '-q', '-DforceStdout', '-f', 'pom.xml',
+    'help:evaluate', `-Dexpression=${expression}`, '-q', '-DforceStdout', '-f', pomXmlPath,
   ], { encoding: 'utf8' }).trim();
   if (!value || value === 'null' || value.startsWith('null object')) {
     throw new Error(`${expression} is not set in pom.xml`);
@@ -20,7 +21,6 @@ function pomValue(expression) {
 
 /** Writes pom-file */
 export function updatePomVersion(desiredVersion) {
-  const pomXmlPath = path.resolve('pom.xml');
   const pomXml = fs.readFileSync(pomXmlPath, 'utf8');
   const match = /<version>.+<!--APIVERSION-->/
   const nextPomXml = pomXml.replace(match, `<version>${desiredVersion}<!--APIVERSION-->`);
@@ -37,14 +37,14 @@ export function deployToMaven(version) {
   updatePomVersion(version);
 
   const deploy2url = pomValue('project.distributionManagement.repository.url');
-  const yamlFilePath = specYaml;
-  const jsonFilePath = specFile;
+  const yamlFilePath = API.specYaml;
+  const jsonFilePath = API.specJson;
 
   const mvnOptions = [
     'deploy:deploy-file',
     '-DrepositoryId=github',
     `-Durl=${deploy2url}`,
-    '-DpomFile=pom.xml',
+    `-DpomFile=${pomXmlPath}`,
     '-DgeneratePom=false',
     '-DuniqueVersion=false',
     `-Dversion=${version}`,

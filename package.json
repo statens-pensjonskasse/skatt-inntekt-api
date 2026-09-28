@@ -1,23 +1,32 @@
 {
-  "description": "Wrapper swaggerhub OpenAPI specification for Skatteetatens Inntekt API",
   "name": "@statens-pensjonskasse/skatt-inntekt-api",
   "version": "1.6.2",
+  "description": "Npm package holds OpenAPI specification for Skatteetatens Inntekt API",
+  "license": "UNLICENSED",
   "_README_": [
     "********************************************************************",
-    "BEWARE: version is updated by scripts to match version of API",
-    "All dependencies are for development, possibly building and testing, but not for published artifacts",
-    "published artifacts have no dependencies",
+    "BEWARE: THIS IS NOT A VANILLA NODE PROJECT, LET ME COUNT THE WAYS:",
+    "version is managed by update-spec script to align with API version",
+    "package.json serves as a template",
+    "scripts are for development use, no dependencies are allowed",
+    "files are downloaded and NEVER EDITED",
+    "LICENSE must not be attached, as the downloaded files are not ours to license",
     "********************************************************************"
   ],
+  "swaggerhubDependency": {
+    "https://api.swaggerhub.com/apis/skatteetaten/inntekt-api": "1.6.2"
+  },
   "files": [
     "skatt-inntekt-api.json",
     "skatt-inntekt-api.yaml"
   ],
   "scripts": {
+    "prepublishOnly": "if [ -f LICENSE ]; then mv LICENSE _LICENSE_BAK; fi",
+    "postpublish": "if [ -f _LICENSE_BAK ]; then mv _LICENSE_BAK LICENSE; fi",
     "lint": "redocly lint skatt-inntekt-api.yaml && redocly lint skatt-inntekt-api.json",
     "renovate": "node scripts/api-renovate.mjs",
     "update-spec": "node scripts/api-updater.mjs",
-    "postpublish": "node scripts/maven.mjs"
+    "mvn-publish": "node scripts/mvn-deploy.mjs"
   },
   "devDependencies": {
     "@redocly/cli": "^2.53.3"
