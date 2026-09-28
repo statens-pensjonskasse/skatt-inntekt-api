@@ -1,0 +1,86 @@
+name: Renovate Open API specification
+
+on:
+  push:
+    branches:
+      - DOES_NOT_WORK  # TODO: sette opp "Allow GitHub Actions to create and approve pull requests", som ikke er tillat av org policy
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: renovate-api
+  cancel-in-progress: false
+
+env:
+  BRANCH: renovate/api
+  BASE: main
+
+jobs:
+  renovate-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BASE }}
+
+      - name: Abort if ${{ env.BRANCH }} already exists
+        id: branch
+        run: |
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null; then
+            echo "::notice::Branch $BRANCH already exists, aborting. Merge or close its Pull Request and delete the branch to allow a new update."
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-node@v4
+        if: steps.branch.outputs.exists == 'false'
+        with:
+          node-version: 24
+          cache: npm
+
+      - if: steps.branch.outputs.exists == 'false'
+        run: npm ci
+
+      - name: renovate and update
+        if: steps.branch.outputs.exists == 'false'
+        run: npm run renovate && npm run update-spec
+
+      - name: Detect changes
+        id: changes
+        if: steps.branch.outputs.exists == 'false'
+        run: |
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No files changed"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git diff --cached --stat
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            # echo "version=$(jq -r '.swaggerhubDependency' package.json)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create ${{ env.BRANCH }} from ${{ env.BASE }}
+        if: steps.changes.outputs.changed == 'true'
+        run: git push origin "HEAD:refs/heads/$BRANCH"
+
+      - name: Commit changes
+        if: steps.changes.outputs.changed == 'true'
+        uses: statens-pensjonskasse/gha-create-signed-commit@2343535e0ab61d4bd30954ca59d1fb66f1d85c51 # v0.1.3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ env.BRANCH }}
+          message: 'chore: update API specification to ${{ steps.changes.outputs.version }}'
+          push: true
+
+      - name: Open Pull Request to ${{ env.BASE }}
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.changes.outputs.version }}
+        run: |
+          gh pr create --head "$BRANCH" --base "$BASE" \
+            --title "chore: update API specification to $VERSION" \
+            --body "Automated update of the Open API specification from swaggerhub to version $VERSION, created by workflow [${GITHUB_WORKFLOW}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})."

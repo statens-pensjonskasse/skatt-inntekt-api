@@ -1,6 +1,45 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "schedule": ["every 1 months on the 26th day of the month"],
+  "timezone": "Europe/Oslo",
+  "schedule": [
+    "* 17-21 * * 1",
+    "every 1 months on the 15th day of the month"
+  ],
+  "customManagers": [
+    {
+      "customType": "jsonata",
+      "description": "SwaggerHub APIs in package.json swaggerhubDependency, { \"<swaggerhub api url>\": \"<version>\" }",
+      "fileFormat": "json",
+      "managerFilePatterns": ["/^package\\.json$/"],
+      "matchStrings": [
+        "$each(swaggerhubDependency, function($v, $k) { { \"depName\": $k, \"currentValue\": $v } })"
+      ],
+      "datasourceTemplate": "custom.swaggerhub"
+    },
+    {
+      "customType": "jsonata",
+      "description": "SwaggerHub API in api-registry.json, desired version from registry was the latest on last scan",
+      "fileFormat": "json",
+      "managerFilePatterns": ["/^api-registry\\.json$/"],
+      "matchStrings": [
+        "{ \"depName\": registry, \"registryUrl\": registry, \"currentValue\": desiredVersion }"
+      ],
+      "datasourceTemplate": "custom.apiRegistry"
+    }
+  ],
+  "customDatasources": {
+    "swaggerhub": {
+      "defaultRegistryUrlTemplate": "{{packageName}}",
+      "transformTemplates": [
+        "{\"releases\": apis.{\"version\": properties[type='X-Version'].value}}"
+      ]
+    },
+    "apiRegistry": {
+      "transformTemplates": [
+        "{\"releases\": apis.{\"version\": properties[type='X-Version'].value}}"
+      ]
+    }
+  },
   "packageRules": [
     {
       "matchPackageNames": [ "*" ],

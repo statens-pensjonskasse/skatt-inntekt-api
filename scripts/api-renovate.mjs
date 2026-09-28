@@ -1,7 +1,7 @@
 /***********************************************************************
-// script updates api.json if a newer API version is found on swaggerhub
+// script updates apiVersion if a newer version is found on swaggerhub
 ************************************************************************/
 
-import {renovateApi} from './api.mjs';
+import {API} from './api.mjs';
 
-await renovateApi();
+await API.renovateApi();

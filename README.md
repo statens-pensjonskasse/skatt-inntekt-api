@@ -20,8 +20,17 @@ about inntekt API
 the Open API specification for income (inntekt) from the Norwegian Tax Administration (skatteetaten).  
 The API is documented [here](https://skatteetaten.github.io/api-dokumentasjon/en/api/inntekt).
 
+License
+-------
+The [MIT License](LICENSE) covers only the code and documentation written by Statens pensjonskasse.  
+`skatt-inntekt-api.json` and `skatt-inntekt-api.yaml` are downloaded from Skatteetaten and are **not** covered by it.
+They are subject to [Skatteetaten's terms of use](https://www.skatteetaten.no/deling/bruksvilkar-for-delingstjenester).  
+The published npm and Maven artifacts contain only these files. See [NOTICE](NOTICE).
+
 Development
 -----------
 node required for local development, maven only if you want to deploy stuff manually.  
-run scripts in package.json according to needs.  
+`package.json` in the root is the published npm package and has no dependencies.
+Development dependencies, `node_modules` and `package-lock.json` live in `tools/`, together with the scripts, `api.json` and `pom.xml`.  
+Run `npm run tools-install` once, then run the scripts in the root `package.json` according to needs.  
 Open Pull requests for changes.  
