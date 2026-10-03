@@ -1,42 +1,9 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "timezone": "Europe/Oslo",
-  "schedule": [ "between 4am and 8am on weekdays" ],
-  "customManagers": [
-    {
-      "customType": "jsonata",
-      "description": "SwaggerHub APIs in package.json swaggerhubDependency, { \"<swaggerhub api url>\": \"<version>\" }",
-      "fileFormat": "json",
-      "managerFilePatterns": ["/^package\\.json$/"],
-      "matchStrings": [
-        "$each(swaggerhubDependency, function($v, $k) { { \"depName\": $k, \"currentValue\": $v } })"
-      ],
-      "datasourceTemplate": "custom.swaggerhub"
-    },
-    {
-      "customType": "jsonata",
-      "description": "SwaggerHub API in openapi-artifact.json, desired version from registry was the latest on last scan",
-      "fileFormat": "json",
-      "managerFilePatterns": ["/^openapi-artifact\\.json$/"],
-      "matchStrings": [
-        "{ \"depName\": registry, \"registryUrl\": registry, \"currentValue\": desiredVersion }"
-      ],
-      "datasourceTemplate": "custom.apiRegistry"
-    }
+  "extends": [
+    "github>statens-pensjonskasse/openapi-artifact-wrapper:renovate-swaggerhub-artifact"
   ],
-  "customDatasources": {
-    "swaggerhub": {
-      "defaultRegistryUrlTemplate": "{{packageName}}",
-      "transformTemplates": [
-        "{\"releases\": apis.{\"version\": properties[type='X-Version'].value}}"
-      ]
-    },
-    "apiRegistry": {
-      "transformTemplates": [
-        "{\"releases\": apis.{\"version\": properties[type='X-Version'].value}}"
-      ]
-    }
-  },
+  "schedule": [ "every 1 months on the 4th day of the month" ],
   "packageRules": [
     {
       "matchPackageNames": [ "*" ],
