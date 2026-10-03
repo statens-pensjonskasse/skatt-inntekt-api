@@ -9,7 +9,7 @@ TODO: add workflow to run script and open PR when new version is found.
 **Wrapping**: A version update on main will trigger release and publish npm and maven artifacts containing the Open API specification files (json and yaml)  
 
 **Artifacts**:  
-*   maven: `no.spk..ios:skatt-inntekt-api` jar with classifier=openapi, type=json with skatt-inntekt-api.json, type=yaml contains skatt-inntekt-api.yaml
+*   maven: `no.spk.ios:skatt-inntekt-api` jar with classifier=openapi, type=json with skatt-inntekt-api.json, type=yaml contains skatt-inntekt-api.yaml
 *   npm: `@skatteetaten/skatt-inntekt-api` npm package containing skatt-inntekt-api.json + skatt-inntekt-api.yaml
 
 Repository is owned by SPK Team "integrasjon-og-samhandling"
