@@ -6,21 +6,19 @@
   "_README_": [
     "********************************************************************",
     "BEWARE: THIS IS NOT A VANILLA NODE PROJECT, LET ME COUNT THE WAYS:",
-    "version is managed by update-spec script to align with API version",
-    "package.json serves as a template",
-    "scripts are for development use, no dependencies are allowed",
-    "files are downloaded and NEVER EDITED, filenames are bound to artifactId / name",
+    "version is managed by script to align with API version",
+    "package.json scripts are for development and CI use, no non-dev dependencies are allowed",
+    "Open API specification files are downloaded and NEVER EDITED",
     "LICENSE must not be attached, as the downloaded files are not ours to license",
     "********************************************************************"
   ],
   "files": [
+    "NOTICE",
     "skatt-inntekt-api.json",
     "skatt-inntekt-api.yaml"
   ],
   "scripts": {
     "help": "openapi-artifact-cli help",
-    "prepublishOnly": "if [ -f LICENSE ]; then mv LICENSE _LICENSE_BAK; fi",
-    "postpublish": "if [ -f _LICENSE_BAK ]; then mv _LICENSE_BAK LICENSE; fi",
     "lint": "redocly lint skatt-inntekt-api.yaml && redocly lint skatt-inntekt-api.json",
     "renovate": "openapi-artifact-cli renovate-api",
     "update-spec": "openapi-artifact-cli update-api",

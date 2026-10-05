@@ -2,7 +2,6 @@
   "_README_": [
     "********************************************************************",
     "BEWARE: version should match API version once update-spec script has run",
-    "The published package contains no dependencies, only specification files.",
     "********************************************************************"
   ],
   "registry": "https://api.swaggerhub.com/apis/skatteetaten/inntekt-api",

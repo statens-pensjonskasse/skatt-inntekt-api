@@ -11,7 +11,7 @@
 
     <licenses>
         <license>
-            <comments>The Open API specification contained in artifacts is downloaded unmodified from Skatteetaten. Statens pensjonskasse grants no licence to it; the MIT License of the source repository does not apply.</comments>
+            <comments>The Open API specification contained in artifacts is downloaded unmodified from Swaggerhub. Statens pensjonskasse grants no licence to it.</comments>
         </license>
     </licenses>
 
