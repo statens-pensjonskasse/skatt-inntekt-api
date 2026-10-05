@@ -1,10 +1,5 @@
-The MIT License in LICENSE applies only to material authored by Statens
-pensjonskasse in this repository (scripts, workflows, build configuration
-and documentation).
-
-It does NOT apply to the following third-party files, which are downloaded
-unmodified from SwaggerHub and remain the property of their owner,
-Skatteetaten (the Norwegian Tax Administration):
+The following third-party files, are downloaded unmodified from SwaggerHub
+and remain the property of their owner, Skatteetaten (the Norwegian Tax Administration):
 
   skatt-inntekt-api.json
   skatt-inntekt-api.yaml
@@ -15,4 +10,4 @@ Terms of use:  https://www.skatteetaten.no/deling/bruksvilkar-for-delingstjenest
 Statens pensjonskasse grants no licence to these files. Use of them is
 governed by Skatteetaten's terms. The npm and Maven artifacts published from
 this repository contain only these files, so they are distributed under
-Skatteetaten's terms, not under the MIT License.
+Skatteetaten's terms.

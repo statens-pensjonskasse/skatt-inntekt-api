@@ -6,12 +6,12 @@
     <!-- BEWARE: NOT A MAVEN PROJECT, pom is used and manipulated by scripts -->
     <groupId>no.spk.ios</groupId>
     <artifactId>skatt-inntekt-api</artifactId>
-    <version>1.6.2<!--APIVERSION--></version>
+    <version>1.7.0<!--APIVERSION--></version>
     <packaging>pom</packaging>
 
     <licenses>
         <license>
-            <comments>The Open API specification contained in artifacts is downloaded unmodified from Skatteetaten. Statens pensjonskasse grants no licence to it; the MIT License of the source repository does not apply.</comments>
+            <comments>The Open API specification contained in artifacts is downloaded unmodified from Swaggerhub. Statens pensjonskasse grants no licence to it.</comments>
         </license>
     </licenses>
 
