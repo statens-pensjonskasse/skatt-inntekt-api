@@ -1,6 +1,6 @@
 {
   "name": "@statens-pensjonskasse/skatt-inntekt-api",
-  "version": "1.6.2",
+  "version": "1.7.0",
   "description": "Npm package holds OpenAPI specification for Skatteetatens Inntekt API",
   "license": "UNLICENSED",
   "_README_": [
@@ -19,12 +19,9 @@
   ],
   "scripts": {
     "help": "openapi-artifact-cli help",
-
     "prepublishOnly": "if [ -f LICENSE ]; then mv LICENSE _LICENSE_BAK; fi",
     "postpublish": "if [ -f _LICENSE_BAK ]; then mv _LICENSE_BAK LICENSE; fi",
-
     "lint": "redocly lint skatt-inntekt-api.yaml && redocly lint skatt-inntekt-api.json",
-
     "renovate": "openapi-artifact-cli renovate-api",
     "update-spec": "openapi-artifact-cli update-api",
     "mvn-publish": "openapi-artifact-cli mvn-deploy"

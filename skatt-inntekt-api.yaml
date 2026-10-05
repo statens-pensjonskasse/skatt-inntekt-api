@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   description: Tjenesten leverer informasjon om arbeidsgivers (opplysningspliktiges) innrapporterte inntektsopplysninger for en inntektsmottaker for en gitt periode.
-  version: 1.6.2
+  version: 1.7.0
   title: Inntekt API
   termsOfService: https://www.skatteetaten.no/deling/bruksvilkar-for-delingstjenester
   contact:
@@ -641,12 +641,6 @@ paths:
           type: string
           format: uuid
         example: 123e4567-e89b-12d3-a456-426655440000
-      - name: AltinnSamtykke
-        in: header
-        description: Representasjon av samtykket (Altinn 2) man har innhentet fra skattyteren man henter data for. Gjelder kun for rettighetspakker som krever samtykke. Skal ikke anvendes for samtykker i Altinn 3.
-        required: false
-        schema:
-          type: string
       responses:
         "200":
           description: Gyldig respons
