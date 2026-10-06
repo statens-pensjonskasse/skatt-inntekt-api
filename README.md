@@ -52,3 +52,21 @@ Scripts, workflows and renovate rely on [openapi-artifact-wrapper](https://githu
 1. Branch from main
 2. Pull-request and merge to main.
 3. github workflow builds, releases and deploys
+
+### SNAPSHOTs and development versions
+Should you care to publish SNAPSHOT/development versions of wrapped API artifact, you must do so manually
+
+#### Maven
+```
+mvn install:install-file \
+-DpomFile=pom.xml -DgeneratePom=false -DuniqueVersion=false -Dversion=1.7.0-SNAPSHOT \
+-Dclassifier=openapi -Dtype=yaml -Dfile=skatt-inntekt-api.yaml
+```
+(or `mvn deploy:deploy-file-DrepositoryId=github -Durl=https://maven.pkg.github.com/statens-pensjonskasse/skatt-inntekt-api ...` if you want to distribute SNAPSHOT outside your machine)
+
+#### Node
+```
+npm version prepatch --preid=alpha --no-git-tag-version
+npm publish --tag alpha
+git checkout package.json package-lock.json
+```
