@@ -1,18 +1,19 @@
 skatt-inntekt-api
 =================
 
-Repository used to track, update, wrap and publish [inntekt-api](https://app.swaggerhub.com/apis/skatteetaten/inntekt-api/) from skatteetaten on swaggerhub,
-owned and maintained by SPK Team "integrasjon-og-samhandling".  
+Repository publishes npm and maven artifacts of Open API specification [inntekt-api](https://app.swaggerhub.com/apis/skatteetaten/inntekt-api/) from skatteetaten, 
+tracking updates to versions published on swaggerhub.  
+Repo is owned and maintained by SPK Team "integrasjon-og-samhandling".  
 
 **Tracking**: renovate preset to update desired version in `openapi-artifact.json` when new version of inntekt-api is found on swaggerhub.
-(node script "update-spec" can be used on developer PC, does not work yet on CI)  
+(node script `update-spec` can be used on developer PC, does not work yet on CI)  
 
-**Updating**: "update-spec" node script will download desired version of the Open API specification from swaggerhub and update version in package.json and pom.xml.
+**Updating**: `update-spec` node script will download desired version of the Open API specification from swaggerhub and update version in package.json and pom.xml.
 CI workflow will run this script on all branches should you (or renovate-bot) forget to do so.  
 
 **Wrapping**: package.json and pom.xml specifies artifacts:
-*   maven: `no.spk.ios:skatt-inntekt-api` jar with classifier=openapi, type=json with skatt-inntekt-api.json, type=yaml contains skatt-inntekt-api.yaml
-*   npm: `@skatteetaten/skatt-inntekt-api` npm package containing skatt-inntekt-api.json + skatt-inntekt-api.yaml
+*   maven: `no.spk.ios:skatt-inntekt-api` artifacts with type=json and type=yaml, both with classifier=openapi
+*   npm: `@statens-pensjonskasse/skatt-inntekt-api` npm package containing skatt-inntekt-api.json + skatt-inntekt-api.yaml
 
 **Publishing**: Update on main branch may trigger release and publish npm and maven artifacts.
 (it is possible to deploy independently from developer machine, but any version may only be published once, and maven deploy is not straight forward, refer to source code for details)
@@ -47,8 +48,7 @@ node required for local development, maven only if you want to deploy stuff manu
 `openapi-artifact.json` is used to track desired version of api, `package.json` contains script used to update and manage the API artifacts.  
 Scripts, workflows and renovate rely on [openapi-artifact-wrapper](https://github.com/statens-pensjonskasse/openapi-artifact-wrapper)  
 
-Branching and Release
----------------------
-1. Branch fra main
-3. Pull-request og merge til main.
-4. github workflow bygger, releaser og deployer
+### Branching and Release
+1. Branch from main
+2. Pull-request and merge to main.
+3. github workflow builds, releases and deploys

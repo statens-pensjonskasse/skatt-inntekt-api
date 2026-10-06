@@ -1,4 +1,4 @@
-name: Tag a release and publish artifacts if needed
+name: Run update script and - if appropriate - tag a release and publish artifacts
 
 on:
   push:
@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  prepare:
+  update-spec:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -43,13 +43,35 @@ jobs:
           fail-on-no-changes: false
           push: true
 
-  publish:
+  release:
     if: github.ref == 'refs/heads/main'
-    uses: statens-pensjonskasse/openapi-artifact-wrapper/.github/workflows/api-publish.yml@e944a0ff199a8fb7da27999951b622f815538bcc  # 0.0.4
+    uses: statens-pensjonskasse/openapi-artifact-wrapper/.github/workflows/api-release.yml@b8dfe0bb64ab1fc0239c36b7d735dbc47c42fdc8  # 0.0.5
     with:
       api-spec-json: skatt-inntekt-api.json
-      publish-command: npm publish && npm run mvn-publish
     permissions:
       contents: write
-      packages: write
     secrets: inherit
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: [ release ]
+    permissions:
+      packages: write
+    if: needs.release.outputs.release-performed == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: # node is preinstalled on ubuntu-latest, but publish needs setup-node to configure registry and auth
+          node-version: 24.21.0
+          registry-url: https://npm.pkg.github.com
+          scope: '@statens-pensjonskasse'
+      - uses: actions/setup-java@v5
+        with:
+          java-version: 25
+          distribution: temurin
+      - name: Publish artifacts
+        id: publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.PAT_FOR_PACKAGES_ACCESS || secrets.GITHUB_TOKEN }} # node may need to install a package
+          GITHUB_TOKEN: ${{ github.token }} # maven should have no dependencies
+        run: npm publish && npm run mvn-publish
