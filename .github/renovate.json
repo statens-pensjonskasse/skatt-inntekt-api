@@ -3,7 +3,7 @@
   "extends": [
     "github>statens-pensjonskasse/openapi-artifact-wrapper:renovate-swaggerhub-artifact"
   ],
-  "schedule": [ "every 1 months on the 4th day of the month" ],
+  "schedule": [ "every 1 months on the 10th day of the month" ],
   "packageRules": [
     {
       "matchPackageNames": [ "*" ],
