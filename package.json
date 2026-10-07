@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@redocly/cli": "^2.57.0",
-    "@statens-pensjonskasse/openapi-artifact-wrapper": "^0.0.4"
+    "@statens-pensjonskasse/openapi-artifact-wrapper": "^0.0.5"
   },
   "repository": {
     "type": "git",
