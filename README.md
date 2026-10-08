@@ -28,7 +28,7 @@ If you are outside organization "statens-pensjonskasse", don't bother fixing, ju
 We may eventually be able to publish open source artifacts as well as code.
 
 
-about inntekt API
+About inntekt API
 -----------------
 [inntekt-api](https://app.swaggerhub.com/apis/skatteetaten/inntekt-api/) is
 the Open API specification for income (inntekt) from the Norwegian Tax Administration (skatteetaten).  
@@ -44,14 +44,15 @@ As for the remaining code, scripts and workflows in this repository, you may con
 
 Development
 -----------
-node required for local development, maven only if you want to deploy stuff manually.  
+node required for local development, maven for deployment.  
 `openapi-artifact.json` is used to track desired version of api, `package.json` contains script used to update and manage the API artifacts.  
 Scripts, workflows and renovate rely on [openapi-artifact-wrapper](https://github.com/statens-pensjonskasse/openapi-artifact-wrapper)  
 
 ### Branching and Release
 1. Branch from main
 2. Pull-request and merge to main.
-3. github workflow builds, releases and deploys
+3. github workflow builds and releases
+4. deploy manually from updated main branch with `npm install && npm publish && npm run mvn-publish`
 
 ### SNAPSHOTs and development versions
 Should you care to publish SNAPSHOT/development versions of wrapped API artifact, you must do so manually
@@ -65,6 +66,7 @@ mvn install:install-file \
 (or `mvn deploy:deploy-file-DrepositoryId=github -Durl=https://maven.pkg.github.com/statens-pensjonskasse/skatt-inntekt-api ...` if you want to distribute SNAPSHOT outside your machine)
 
 #### Node
+(you may want to manually rewind version, because npm will forward version to next with provided script)
 ```
 npm version prepatch --preid=alpha --no-git-tag-version
 npm publish --tag alpha
