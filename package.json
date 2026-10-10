@@ -25,7 +25,7 @@
     "mvn-publish": "openapi-artifact-cli mvn-deploy"
   },
   "devDependencies": {
-    "@redocly/cli": "^2.57.0",
+    "@redocly/cli": "^2.60.0",
     "@statens-pensjonskasse/openapi-artifact-wrapper": "^0.0.5"
   },
   "repository": {
