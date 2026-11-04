@@ -4,16 +4,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <!-- BEWARE: NOT A MAVEN PROJECT, pom is used and manipulated by scripts -->
-    <groupId>no.spk.ios</groupId>
-    <artifactId>skatt-inntekt-api</artifactId>
-    <version>1.7.0<!--APIVERSION--></version>
+    <groupId>no.spk.ios<!--API-GROUP--></groupId>
+    <artifactId>skatt-inntekt-api<!--API-NAME--></artifactId>
+    <version>1.7.0.1<!--APIVERSION--></version>
     <packaging>pom</packaging>
-
-    <licenses>
-        <license>
-            <comments>The Open API specification contained in artifacts is downloaded unmodified from Swaggerhub. Statens pensjonskasse grants no licence to it.</comments>
-        </license>
-    </licenses>
 
     <scm>
         <url>https://github.com/statens-pensjonskasse/${project.artifactId}</url>
@@ -25,4 +19,37 @@
             <url>https://maven.pkg.github.com/statens-pensjonskasse/${project.artifactId}</url>
         </repository>
     </distributionManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <inherited>false</inherited>
+                <executions>
+                    <execution>
+                        <id>attach-openapi</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attach-artifact</goal>
+                        </goals>
+                        <configuration>
+                            <artifacts>
+                                <artifact>
+                                    <file>skatt-inntekt-api.yaml<!--API-YAML--></file>
+                                    <type>yaml</type>
+                                    <classifier>openapi</classifier>
+                                </artifact>
+                                <artifact>
+                                    <file>skatt-inntekt-api.json<!--API-JSON--></file>
+                                    <type>json</type>
+                                    <classifier>openapi</classifier>
+                                </artifact>
+                            </artifacts>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
