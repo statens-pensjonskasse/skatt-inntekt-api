@@ -45,7 +45,7 @@ jobs:
 
   release:
     if: github.ref == 'refs/heads/main'
-    uses: statens-pensjonskasse/openapi-artifact-wrapper/.github/workflows/api-release.yml@0.1.0
+    uses: statens-pensjonskasse/openapi-artifact-wrapper/.github/workflows/api-release.yml@cf4d68629b5b9ce5d2e15962343abdfcb0d4e6e7 # 0.1.0
     permissions:
       contents: write
       packages: read
