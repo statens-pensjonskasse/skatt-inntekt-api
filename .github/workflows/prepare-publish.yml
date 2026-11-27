@@ -1,4 +1,4 @@
-name: Run update script and - if appropriate - tag a release and publish artifacts
+name: Tag a release and publish artifacts if needed
 
 on:
   push:
@@ -6,77 +6,28 @@ on:
       - '**'
 
 concurrency:
-  group: release-and-publish
+  group: prepare-and-publish
   cancel-in-progress: false
 
 jobs:
-  update-spec:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      packages: read
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          fetch-depth: 0
-
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
-        with:
-          node-version: 26.13.0
-          registry-url: https://npm.pkg.github.com
-          scope: '@statens-pensjonskasse'
-
-      - name: update
-        env:
-          NODE_AUTH_TOKEN: ${{ github.token }}
-        run: |
-          npm install # ci is useless on a renovate PR
-          npm run update-spec
-          git status
-          git add -A
-
-      - name: Commit changes
-        uses: statens-pensjonskasse/gha-create-signed-commit@7b9e477ae72b66627fb37db6b841f0e31d3d965e # v0.1.5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          message: 'chore: update API spec'
-          fail-on-no-changes: false
-          push: true
-
-  release:
-    if: github.ref == 'refs/heads/main'
-    uses: statens-pensjonskasse/openapi-artifact-wrapper/.github/workflows/api-release.yml@0.1.0
+  prepare-api:
+    uses: statens-pensjonskasse/swagger-tracker/.github/workflows/install-api.yml@5ca3d4d10ffc21d681ce1ac6cb9f9a1b73dfc279  # 0.2.3
     permissions:
       contents: write
       packages: read
     secrets: inherit
+    with:
+      commit-message: 'chore: install API version'
 
   publish:
-    runs-on: ubuntu-latest
-    needs: [ release ]
-    if: false # needs.release.outputs.release-performed == 'true'
+    needs: [ prepare-api ]
+    uses: statens-pensjonskasse/openapi-artifact-wrapper/.github/workflows/build-publish-api.yml@e7e8e65e1d015a9220bd96cf55afcd5fbf47cd6e # 0.2.2
     permissions:
-      contents: read
+      contents: write
       packages: write
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
-        with: # node is preinstalled on ubuntu-latest, but publish needs setup-node to configure registry and auth
-          node-version: 26.13.0
-          registry-url: https://npm.pkg.github.com
-          scope: '@statens-pensjonskasse'
-      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6
-        with:
-          java-version: 25
-          distribution: temurin
-      - name: Publish artifacts
-        id: publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.PAT_FOR_PACKAGES_ACCESS || secrets.GITHUB_TOKEN }} # node may need to install a package
-          GITHUB_TOKEN: ${{ github.token }} # maven should have no dependencies
-        run: |
-          npm ci
-          npm publish
-          npm run mvn-publish
+    secrets: inherit
+    with:
+      tbv-script: npm run tbv
+      commit-message: 'chore: update project files to API version'
+      public-access: true
+      publish-from-branch: main

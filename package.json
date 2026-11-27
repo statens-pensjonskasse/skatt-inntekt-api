@@ -18,15 +18,22 @@
     "skatt-inntekt-api.yaml"
   ],
   "scripts": {
-    "help": "openapi-artifact-cli help",
+    "help": "swag help && apiwrap help",
+    "setup-swag": "swag bootstrap https://api.swaggerhub.com/apis/skatteetaten/inntekt-api",
+    "renovate": "swag update",
+
+    "_README_": "scripts above included for reference, below is the important stuff",
+
+    "build": "swag install && apiwrap bootstrap no.spk.ios && apiwrap update",
     "lint": "redocly lint skatt-inntekt-api.yaml && redocly lint skatt-inntekt-api.json",
-    "renovate": "openapi-artifact-cli renovate-api",
-    "update-spec": "openapi-artifact-cli update-api",
-    "mvn-publish": "openapi-artifact-cli mvn-deploy"
+    "verify": "npm run lint && apiwrap verify",
+
+    "tbv": "npm run build && npm run verify"
   },
   "devDependencies": {
-    "@redocly/cli": "^2.72.1",
-    "@statens-pensjonskasse/openapi-artifact-wrapper": "^0.1.0"
+    "@redocly/cli": "^2.79.0",
+    "@statens-pensjonskasse/openapi-artifact-wrapper": "^0.2.2",
+    "@statens-pensjonskasse/swagger-tracker": "^0.2.3"
   },
   "repository": {
     "type": "git",

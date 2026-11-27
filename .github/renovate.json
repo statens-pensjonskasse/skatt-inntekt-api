@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "github>statens-pensjonskasse/openapi-artifact-wrapper:renovate-swaggerhub-artifact"
+    "github>statens-pensjonskasse/swagger-tracker:renovate-swag"
   ],
   "schedule": [ "every 1 months on the 10th day of the month" ],
   "packageRules": [
